@@ -23,6 +23,13 @@ data/processed/
 !data/samples/.gitkeep
 !assets/.gitkeep
 
+# Gradio, UI Cache & Logs
+.gradio/
+flagged/
+*.log
+dry_run_*.*
+data/samples/dry_run_*.*
+
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
 */.ipynb_checkpoints/*
