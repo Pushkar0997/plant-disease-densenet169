@@ -3,7 +3,7 @@ OpenCV & Matplotlib Visual Overlay and Diagnostic Annotation Engine.
 Renders stylized bounding boxes, status badges, and probability charts.
 """
 
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Optional
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt

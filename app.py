@@ -4,7 +4,7 @@ Built with Gradio for local execution and Hugging Face Spaces deployment.
 """
 
 import os
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Optional
 import gradio as gr
 import numpy as np
 from PIL import Image
@@ -25,10 +25,10 @@ pipeline = PlantDiagnosticPipeline(
 
 
 def diagnose_single_image(
-    image: Image.Image,
+    image: Optional[Image.Image],
     conf_threshold: float,
     top_k_count: int
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, str, Dict[str, float]]:
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray], str, Dict[str, float]]:
     """
     Runs two-stage diagnostic inference for a single leaf image.
     """
@@ -50,8 +50,8 @@ def diagnose_single_image(
         {result['display_name']}
     </h3>
     <p style="margin: 0; color: #94a3b8; font-size: 0.95rem;">
-        <b>Crop:</b> <span style="color: #f1f5f9;">{result['crop']}</span> &nbsp;|&nbsp; 
-        <b>Condition:</b> <span style="color: #f1f5f9;">{result['condition']}</span> &nbsp;|&nbsp; 
+        <b>Crop:</b> <span style="color: #f1f5f9;">{result['crop']}</span> &nbsp;|&nbsp;
+        <b>Condition:</b> <span style="color: #f1f5f9;">{result['condition']}</span> &nbsp;|&nbsp;
         <b>Confidence:</b> <span style="color: {badge_color}; font-weight: bold;">{result['confidence'] * 100:.1f}%</span>
     </p>
     <p style="margin: 6px 0 0 0; color: #cbd5e1; font-size: 0.9rem;">
@@ -64,7 +64,7 @@ def diagnose_single_image(
 
 ---
 <small style="color: #64748b;">
-<b>Localization Engine:</b> {result['localization_method'].upper()} &nbsp;|&nbsp; 
+<b>Localization Engine:</b> {result['localization_method'].upper()} &nbsp;|&nbsp;
 <b>Leaf ROI Coordinates:</b> {result['bbox']}
 </small>
 """
@@ -111,16 +111,16 @@ custom_css = """
 }
 """
 
-with gr.Blocks(css=custom_css, title="🌿 Plant Disease Diagnostic Pipeline | DenseNet-169") as demo:
+with gr.Blocks(title="🌿 Plant Disease Diagnostic Pipeline | DenseNet-169") as demo:
     with gr.Column(elem_id="app-container"):
-        
+
         # Header Section
         gr.HTML("""
         <div style="text-align: center; margin: 15px 0 25px 0;">
             <span class="header-badge">AI Plant Pathology v1.0</span>
             <h1 class="main-title">🌿 Plant Disease Detection & Visual Diagnostic Pipeline</h1>
             <p style="color: #94a3b8; font-size: 1.05rem; max-width: 780px; margin: 0 auto;">
-                Two-stage deep learning diagnostic system integrating <b>Leaf Localization</b> with a 
+                Two-stage deep learning diagnostic system integrating <b>Leaf Localization</b> with a
                 fine-tuned <b>DenseNet-169</b> convolutional neural network for 38 crop disease pathologies.
             </p>
         </div>
@@ -274,4 +274,4 @@ The diagnostic framework divides pathology detection into specialized phases to 
         """)
 
 if __name__ == "__main__":
-    demo.launch(share=False)
+    demo.launch(css=custom_css, share=False)

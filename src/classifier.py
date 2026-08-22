@@ -5,7 +5,8 @@ Supports PyTorch model creation, weights loading, preprocessing, and top-k infer
 
 import json
 import os
-from typing import Dict, List, Tuple, Any, Optional
+import re
+from typing import Dict, Any, Optional
 import numpy as np
 from PIL import Image
 import torch
@@ -174,26 +175,49 @@ class DiseaseClassifier:
         except Exception as e:
             print(f"[DiseaseClassifier] Failed to load checkpoint {weights_path}: {e}")
 
-    @staticmethod
-    def parse_class_name(raw_class: str) -> Dict[str, Any]:
+    KNOWN_CROPS = [
+        "Pepper__bell", "Pepper bell", "Pepper,_bell", "Pepper", "Potato",
+        "Tomato", "Apple", "Blueberry", "Cherry", "Corn", "Grape",
+        "Orange", "Peach", "Raspberry", "Soybean", "Squash", "Strawberry"
+    ]
+
+    @classmethod
+    def parse_class_name(cls, raw_class: str) -> Dict[str, Any]:
         """
         Parses raw PlantVillage class format into structured information.
-        Example: 'Tomato___Late_blight' -> Crop: Tomato, Disease: Late Blight, is_healthy: False
+        Handles 'Tomato___Late_blight', 'Tomato__Target_Spot', 'Tomato_Leaf_Mold', etc.
         """
+        crop_part = "Plant"
+        disease_part = raw_class
+
         if "___" in raw_class:
             crop_part, disease_part = raw_class.split("___", 1)
+        elif "__" in raw_class:
+            crop_part, disease_part = raw_class.split("__", 1)
         else:
-            crop_part, disease_part = "Plant", raw_class
+            # Check if raw_class starts with any known crop name followed by '_'
+            for crop_name in cls.KNOWN_CROPS:
+                clean_c = crop_name.replace(",", "").replace("_", " ").strip()
+                if raw_class.lower().startswith(crop_name.lower() + "_"):
+                    crop_part = crop_name
+                    disease_part = raw_class[len(crop_name) + 1:]
+                    break
+                elif raw_class.lower().startswith(clean_c.lower().replace(" ", "_") + "_"):
+                    crop_part = clean_c
+                    disease_part = raw_class[len(clean_c.replace(" ", "_")) + 1:]
+                    break
 
-        crop = crop_part.replace("_", " ").strip()
-        disease_clean = disease_part.replace("_", " ").strip()
+        crop = re.sub(r'[\s_,]+', ' ', crop_part).strip().title()
+        disease_clean = re.sub(r'[\s_]+', ' ', disease_part).strip().title()
         is_healthy = "healthy" in disease_part.lower()
 
-        # Find matching advice description
-        advice = DiseaseClassifier.DISEASE_DESCRIPTIONS.get(
-            disease_part,
-            "Maintain optimal watering, inspect surrounding crops, and isolate any severely damaged plants."
-        )
+        # Find matching advice description by key or substring
+        advice = "Maintain optimal watering, inspect surrounding crops, and isolate any severely damaged plants."
+        for key, text in cls.DISEASE_DESCRIPTIONS.items():
+            key_clean = key.replace("_", " ").lower()
+            if key.lower() in disease_part.lower() or key_clean in disease_clean.lower():
+                advice = text
+                break
 
         return {
             "raw_class": raw_class,

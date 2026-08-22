@@ -7,6 +7,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
+from typing import Optional
 
 # Ensure UTF-8 output encoding on Windows consoles
 if sys.platform == "win32":
@@ -20,7 +21,7 @@ from PIL import Image
 from src.pipeline import PlantDiagnosticPipeline
 
 
-def run_dry_test(image_path: str = None, save_output: bool = True):
+def run_dry_test(image_path: Optional[str] = None, save_output: bool = True):
     print("=" * 65)
     print("[*] Plant Disease DenseNet-169 Pipeline - Dry Run Test")
     print("=" * 65)
@@ -28,7 +29,11 @@ def run_dry_test(image_path: str = None, save_output: bool = True):
     # 1. Check/Select sample image
     samples_dir = Path("data/samples")
     if image_path is None:
-        sample_files = list(samples_dir.glob("*.JPG")) + list(samples_dir.glob("*.jpg")) + list(samples_dir.glob("*.png"))
+        extensions = ("*.JPG", "*.jpg", "*.png", "*.jpeg")
+        sample_files = []
+        for ext in extensions:
+            sample_files.extend(samples_dir.glob(ext))
+
         # Filter out generated test outputs
         sample_files = [f for f in sample_files if not f.name.startswith("dry_run_")]
         if not sample_files:
