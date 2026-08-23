@@ -1,0 +1,29 @@
+# Requirements for the Hugging Face Space (Gradio SDK on ZeroGPU hardware).
+#
+# Differs from the repo's requirements.txt:
+#
+#   1. `spaces` is added. ZeroGPU Spaces require it, and a Space with no
+#      @spaces.GPU-decorated function in its code will crash at startup.
+#      See the _zerogpu_probe function in app.py.
+#   2. ultralytics is omitted. YOLOv8 is not the default localisation path
+#      (LeafDetector falls back to contour/HSV unless yolo_model_path is
+#      passed, and app.py never passes one), so nothing here uses it.
+#   3. scikit-learn and tqdm are omitted: only the evaluation scripts use
+#      them, and those do not run in the Space.
+#
+# Do NOT add an --extra-index-url for CPU-only torch wheels here. ZeroGPU
+# builds expect the standard CUDA wheels; a CPU-only build will fail to
+# schedule onto ZeroGPU hardware. Leave torch unpinned or loosely bounded —
+# pinning an unsupported exact version produces "No candidate PyTorch
+# version found for ZeroGPU" at build time.
+
+spaces
+torch>=2.1.0
+torchvision>=0.16.0
+opencv-python-headless>=4.9.0.80
+gradio>=4.20.0
+numpy>=1.24.0
+Pillow>=10.0.0
+matplotlib>=3.8.0
+requests>=2.31.0
+huggingface_hub>=0.20.0
