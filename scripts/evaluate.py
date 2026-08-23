@@ -74,6 +74,7 @@ Usage
 """
 
 import argparse
+import csv
 import json
 import os
 import random
@@ -105,6 +106,15 @@ from src.classifier import DiseaseClassifier  # noqa: E402
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
+
+# Candidate confidence floors reported in the threshold sweep. Dense at the
+# top end because a well-fit softmax classifier puts most correct predictions
+# very close to 1.0, so the interesting trade-offs live above 0.9 — a sweep
+# that stopped at 0.5 would miss the entire usable range.
+SWEEP_THRESHOLDS = [
+    0.0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80,
+    0.85, 0.90, 0.925, 0.95, 0.97, 0.98, 0.99, 0.995, 0.999,
+]
 
 
 def find_class_root(root: Path) -> Path:
@@ -223,12 +233,65 @@ def save_confusion_png(cm: np.ndarray, class_names: List[str], out_path: Path) -
 
 def summarize(values: np.ndarray) -> Dict[str, float]:
     if values.size == 0:
-        return {"count": 0, "mean": None, "median": None}
+        return {"count": 0, "mean": None, "median": None, "percentiles": None}
     return {
         "count": int(values.size),
         "mean": float(np.mean(values)),
         "median": float(np.median(values)),
+        # Percentiles matter more than mean/median for picking a floor: the
+        # mean hides whether errors are spread out or bunched near the top.
+        "percentiles": {
+            f"p{q}": float(np.percentile(values, q))
+            for q in (1, 5, 10, 25, 50, 75, 90, 95, 99)
+        },
     }
+
+
+def threshold_sweep(y_conf: np.ndarray, correct_mask: np.ndarray,
+                    thresholds: List[float]) -> List[Dict[str, float]]:
+    """
+    For each candidate confidence floor, report what it actually buys.
+
+    The confidence floor's whole job is to trade coverage for reliability:
+    abstaining on some predictions so the ones still shown are more often
+    right. Mean/median confidence alone can't tell you where to set it. This
+    reports, at each threshold:
+
+      errors_suppressed  - wrong predictions that fall below the floor, so
+                           the user sees "not confident" instead of a wrong
+                           diagnosis. This is the benefit.
+      correct_lost       - correct predictions also pushed below the floor.
+                           This is the cost.
+      coverage           - fraction of images still given a diagnosis.
+      selective_accuracy - accuracy among only those still diagnosed. This
+                           is the number that matters to someone acting on
+                           the app's output.
+
+    Pick the floor where selective_accuracy is acceptable and coverage is
+    still useful. Note that all of this is measured on PlantVillage, which
+    is lab-condition data — a floor tuned here may behave very differently
+    on field photographs. See scripts/evaluate_field.py.
+    """
+    n = int(y_conf.size)
+    n_wrong = int((~correct_mask).sum())
+    rows = []
+    for t in thresholds:
+        above = y_conf >= t
+        n_above = int(above.sum())
+        correct_above = int((above & correct_mask).sum())
+        rows.append({
+            "threshold": float(t),
+            "diagnosed": n_above,
+            "abstained": n - n_above,
+            "coverage": (n_above / n) if n else None,
+            "errors_suppressed": int(((~above) & (~correct_mask)).sum()),
+            "errors_suppressed_pct_of_all_errors": (
+                float(((~above) & (~correct_mask)).sum() / n_wrong) if n_wrong else None
+            ),
+            "correct_lost": int(((~above) & correct_mask).sum()),
+            "selective_accuracy": (correct_above / n_above) if n_above else None,
+        })
+    return rows
 
 
 def main() -> int:
@@ -333,6 +396,27 @@ def main() -> int:
     png_path = args.output.with_suffix(".confusion.png")
     save_confusion_png(cm, class_names, png_path)
 
+    # Dump per-prediction rows. The summary JSON only holds aggregates, so
+    # without this any future re-analysis (a different threshold sweep, a
+    # calibration curve, per-class error inspection) would mean re-running
+    # the whole evaluation — which on Colab means re-downloading the dataset.
+    # This file makes the run reusable.
+    predictions_path = args.output.with_suffix(".predictions.csv")
+    with open(predictions_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["index", "true_class", "predicted_class", "correct", "confidence"])
+        for i in range(len(y_true)):
+            writer.writerow([
+                i,
+                class_names[y_true[i]],
+                class_names[y_pred[i]],
+                int(correct_mask[i]),
+                f"{y_conf[i]:.6f}",
+            ])
+    print(f"[evaluate] per-prediction CSV: {predictions_path}")
+
+    n_wrong = int((~correct_mask).sum())
+
     report = {
         "what_this_measures": (
             "Accuracy on the reproduced validation split of the training run. "
@@ -385,6 +469,15 @@ def main() -> int:
                 "and the app's confidence floor is doing less than it appears."
             ),
         },
+        "threshold_sweep": {
+            "note": (
+                "What each candidate confidence floor actually buys. Use this "
+                "to choose DEFAULT_CONFIDENCE_FLOOR in app.py instead of "
+                "guessing. Measured on PlantVillage (lab-condition data) — a "
+                "floor tuned here may behave differently on field photos."
+            ),
+            "rows": threshold_sweep(y_conf, correct_mask, SWEEP_THRESHOLDS),
+        },
         "caveats": [
             "NOT A HELD-OUT TEST SET. The notebook splits train/val only, and "
             "saved a checkpoint on every val-accuracy improvement, so val drove "
@@ -424,7 +517,18 @@ def main() -> int:
     print("  This is a validation-split number, not a test number.")
     print("  It is selection-biased. See 'caveats' in the JSON.")
     print("=" * 62)
-    print(f"\nReport: {args.output}\nConfusion matrix: {png_path}")
+    print("\n  Confidence floor trade-off (PlantVillage):")
+    print(f"    {'floor':>7}  {'coverage':>9}  {'sel.acc':>8}  {'errors hidden':>14}  {'correct lost':>12}")
+    for row in report["threshold_sweep"]["rows"]:
+        if row["threshold"] < 0.30:
+            continue
+        sel = f"{row['selective_accuracy']:.4f}" if row["selective_accuracy"] is not None else "n/a"
+        print(f"    {row['threshold']:>7.3f}  {row['coverage']:>8.1%}  {sel:>8}  "
+              f"{row['errors_suppressed']:>6}/{n_wrong:<7}  {row['correct_lost']:>12}")
+    print("\n  Pick the floor where selective accuracy is acceptable and")
+    print("  coverage is still useful. Set it as DEFAULT_CONFIDENCE_FLOOR in app.py.")
+
+    print(f"\nReport: {args.output}\nConfusion matrix: {png_path}\nPredictions CSV: {predictions_path}")
     return 0
 
 
