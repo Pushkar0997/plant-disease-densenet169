@@ -12,7 +12,7 @@
     "preprocess": "notebook",
     "image_size": 224,
     "batch_size": 32,
-    "device": "cpu"
+    "device": "cuda"
   },
   "dataset": {
     "val_images": 4134,
@@ -396,14 +396,221 @@
     "correct_predictions": {
       "count": 4043,
       "mean": 0.9806156158447266,
-      "median": 0.9997934699058533
+      "median": 0.9997934699058533,
+      "percentiles": {
+        "p1": 0.6249867677688599,
+        "p5": 0.8783482313156128,
+        "p10": 0.9615398049354553,
+        "p25": 0.9960718154907227,
+        "p50": 0.9997934699058533,
+        "p75": 0.9999920725822449,
+        "p90": 0.9999997615814209,
+        "p95": 1.0,
+        "p99": 1.0
+      }
     },
     "incorrect_predictions": {
       "count": 91,
       "mean": 0.6956651210784912,
-      "median": 0.6820111870765686
+      "median": 0.6820078492164612,
+      "percentiles": {
+        "p1": 0.4402943253517151,
+        "p5": 0.46923285722732544,
+        "p10": 0.5057109594345093,
+        "p25": 0.5540178418159485,
+        "p50": 0.6820078492164612,
+        "p75": 0.8327184319496155,
+        "p90": 0.9019513130187988,
+        "p95": 0.9491636753082275,
+        "p99": 0.9959288835525513
+      }
     },
     "note": "If these two distributions overlap heavily, no single confidence threshold can separate right from wrong answers, and the app's confidence floor is doing less than it appears."
+  },
+  "threshold_sweep": {
+    "note": "What each candidate confidence floor actually buys. Use this to choose DEFAULT_CONFIDENCE_FLOOR in app.py instead of guessing. Measured on PlantVillage (lab-condition data) \u2014 a floor tuned here may behave differently on field photos.",
+    "rows": [
+      {
+        "threshold": 0.0,
+        "diagnosed": 4134,
+        "abstained": 0,
+        "coverage": 1.0,
+        "errors_suppressed": 0,
+        "errors_suppressed_pct_of_all_errors": 0.0,
+        "correct_lost": 0,
+        "selective_accuracy": 0.9779874213836478
+      },
+      {
+        "threshold": 0.1,
+        "diagnosed": 4134,
+        "abstained": 0,
+        "coverage": 1.0,
+        "errors_suppressed": 0,
+        "errors_suppressed_pct_of_all_errors": 0.0,
+        "correct_lost": 0,
+        "selective_accuracy": 0.9779874213836478
+      },
+      {
+        "threshold": 0.2,
+        "diagnosed": 4134,
+        "abstained": 0,
+        "coverage": 1.0,
+        "errors_suppressed": 0,
+        "errors_suppressed_pct_of_all_errors": 0.0,
+        "correct_lost": 0,
+        "selective_accuracy": 0.9779874213836478
+      },
+      {
+        "threshold": 0.3,
+        "diagnosed": 4134,
+        "abstained": 0,
+        "coverage": 1.0,
+        "errors_suppressed": 0,
+        "errors_suppressed_pct_of_all_errors": 0.0,
+        "correct_lost": 0,
+        "selective_accuracy": 0.9779874213836478
+      },
+      {
+        "threshold": 0.4,
+        "diagnosed": 4132,
+        "abstained": 2,
+        "coverage": 0.9995162070633768,
+        "errors_suppressed": 0,
+        "errors_suppressed_pct_of_all_errors": 0.0,
+        "correct_lost": 2,
+        "selective_accuracy": 0.9779767666989352
+      },
+      {
+        "threshold": 0.5,
+        "diagnosed": 4117,
+        "abstained": 17,
+        "coverage": 0.9958877600387034,
+        "errors_suppressed": 9,
+        "errors_suppressed_pct_of_all_errors": 0.0989010989010989,
+        "correct_lost": 8,
+        "selective_accuracy": 0.980082584406121
+      },
+      {
+        "threshold": 0.6,
+        "diagnosed": 4075,
+        "abstained": 59,
+        "coverage": 0.9857281083696178,
+        "errors_suppressed": 29,
+        "errors_suppressed_pct_of_all_errors": 0.31868131868131866,
+        "correct_lost": 30,
+        "selective_accuracy": 0.9847852760736197
+      },
+      {
+        "threshold": 0.7,
+        "diagnosed": 4017,
+        "abstained": 117,
+        "coverage": 0.9716981132075472,
+        "errors_suppressed": 49,
+        "errors_suppressed_pct_of_all_errors": 0.5384615384615384,
+        "correct_lost": 68,
+        "selective_accuracy": 0.9895444361463779
+      },
+      {
+        "threshold": 0.8,
+        "diagnosed": 3938,
+        "abstained": 196,
+        "coverage": 0.9525882922109338,
+        "errors_suppressed": 64,
+        "errors_suppressed_pct_of_all_errors": 0.7032967032967034,
+        "correct_lost": 132,
+        "selective_accuracy": 0.9931437277805993
+      },
+      {
+        "threshold": 0.85,
+        "diagnosed": 3895,
+        "abstained": 239,
+        "coverage": 0.9421867440735365,
+        "errors_suppressed": 69,
+        "errors_suppressed_pct_of_all_errors": 0.7582417582417582,
+        "correct_lost": 170,
+        "selective_accuracy": 0.9943517329910141
+      },
+      {
+        "threshold": 0.9,
+        "diagnosed": 3824,
+        "abstained": 310,
+        "coverage": 0.9250120948234156,
+        "errors_suppressed": 80,
+        "errors_suppressed_pct_of_all_errors": 0.8791208791208791,
+        "correct_lost": 230,
+        "selective_accuracy": 0.9971234309623431
+      },
+      {
+        "threshold": 0.925,
+        "diagnosed": 3767,
+        "abstained": 367,
+        "coverage": 0.9112239961296565,
+        "errors_suppressed": 84,
+        "errors_suppressed_pct_of_all_errors": 0.9230769230769231,
+        "correct_lost": 283,
+        "selective_accuracy": 0.9981417573666047
+      },
+      {
+        "threshold": 0.95,
+        "diagnosed": 3700,
+        "abstained": 434,
+        "coverage": 0.8950169327527818,
+        "errors_suppressed": 86,
+        "errors_suppressed_pct_of_all_errors": 0.945054945054945,
+        "correct_lost": 348,
+        "selective_accuracy": 0.9986486486486487
+      },
+      {
+        "threshold": 0.97,
+        "diagnosed": 3576,
+        "abstained": 558,
+        "coverage": 0.865021770682148,
+        "errors_suppressed": 87,
+        "errors_suppressed_pct_of_all_errors": 0.9560439560439561,
+        "correct_lost": 471,
+        "selective_accuracy": 0.9988814317673378
+      },
+      {
+        "threshold": 0.98,
+        "diagnosed": 3488,
+        "abstained": 646,
+        "coverage": 0.8437348814707305,
+        "errors_suppressed": 87,
+        "errors_suppressed_pct_of_all_errors": 0.9560439560439561,
+        "correct_lost": 559,
+        "selective_accuracy": 0.9988532110091743
+      },
+      {
+        "threshold": 0.99,
+        "diagnosed": 3309,
+        "abstained": 825,
+        "coverage": 0.8004354136429608,
+        "errors_suppressed": 89,
+        "errors_suppressed_pct_of_all_errors": 0.978021978021978,
+        "correct_lost": 736,
+        "selective_accuracy": 0.9993955877908733
+      },
+      {
+        "threshold": 0.995,
+        "diagnosed": 3096,
+        "abstained": 1038,
+        "coverage": 0.7489114658925979,
+        "errors_suppressed": 89,
+        "errors_suppressed_pct_of_all_errors": 0.978021978021978,
+        "correct_lost": 949,
+        "selective_accuracy": 0.9993540051679587
+      },
+      {
+        "threshold": 0.999,
+        "diagnosed": 2573,
+        "abstained": 1561,
+        "coverage": 0.6223996129656507,
+        "errors_suppressed": 91,
+        "errors_suppressed_pct_of_all_errors": 1.0,
+        "correct_lost": 1470,
+        "selective_accuracy": 1.0
+      }
+    ]
   },
   "caveats": [
     "NOT A HELD-OUT TEST SET. The notebook splits train/val only, and saved a checkpoint on every val-accuracy improvement, so val drove model selection. No partition of this dataset is sealed.",
