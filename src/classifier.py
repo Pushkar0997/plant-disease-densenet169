@@ -109,16 +109,38 @@ class DiseaseClassifier:
         self.idx_to_class = self._load_class_mapping(class_mapping_path)
         self.num_classes = num_classes or len(self.idx_to_class)
 
-        # Build DenseNet169 model architecture
+        # Build DenseNet169 model architecture. NOTE: the DenseNet backbone is
+        # ImageNet-pretrained, but the classification head below is always
+        # randomly initialized until a checkpoint is successfully loaded via
+        # load_weights(). Predictions from this head are meaningless noise
+        # over `num_classes` categories unless self.weights_loaded is True.
         self.model = self._build_model(self.num_classes)
 
-        # Load weights if provided
+        # `weights_loaded` is the single source of truth for whether this
+        # classifier is producing real predictions or random-head noise.
+        # Every caller (app.py, dry_run.py, scripts/evaluate*.py) MUST check
+        # this before treating a prediction as a diagnosis.
         self.weights_loaded = False
+        self.weights_load_error: Optional[str] = None
+
         if weights_path and os.path.exists(weights_path):
             self.load_weights(weights_path)
+        elif weights_path:
+            self.weights_load_error = f"Weights file not found at {weights_path}."
+            print(
+                f"[DiseaseClassifier] WARNING: {self.weights_load_error} "
+                "No checkpoint was loaded. This classifier is running with an "
+                "UNTRAINED, randomly initialized classification head. Its "
+                "predictions are noise, not diagnoses. weights_loaded=False."
+            )
         else:
-            if weights_path:
-                print(f"[DiseaseClassifier] Weights file not found at {weights_path}. Running with pre-configured weights.")
+            self.weights_load_error = "No weights_path was provided."
+            print(
+                "[DiseaseClassifier] WARNING: No weights_path was provided. "
+                "This classifier is running with an UNTRAINED, randomly "
+                "initialized classification head. Its predictions are noise, "
+                "not diagnoses. weights_loaded=False."
+            )
 
         self.model.to(self.device)
         self.model.eval()
@@ -158,22 +180,148 @@ class DiseaseClassifier:
         )
         return model
 
+    @staticmethod
+    def _extract_state_dict(checkpoint: Any) -> Optional[Dict[str, Any]]:
+        """Pulls the raw tensor state_dict out of the various checkpoint layouts."""
+        if not isinstance(checkpoint, dict):
+            return None
+        for key in ("state_dict", "model_state_dict"):
+            if key in checkpoint and isinstance(checkpoint[key], dict):
+                return checkpoint[key]
+        return checkpoint
+
+    @staticmethod
+    def _build_head_from_state_dict(state_dict: Dict[str, Any], num_features: int) -> nn.Module:
+        """
+        Rebuilds the classifier head to match the shapes actually present in a
+        checkpoint, instead of assuming the Dropout+Linear head that
+        _build_model() creates.
+
+        This exists because the repo contains two different head definitions:
+
+          * src/classifier.py / notebooks/01_...ipynb:
+                Sequential(Dropout(0.3), Linear(1664, N))
+                -> keys classifier.1.weight / classifier.1.bias
+          * notebooks/plantvillage_densenet169_pipeline.ipynb (the one that
+            actually trains):
+                Sequential(Linear(1664, 512), ReLU(), Dropout(0.3), Linear(512, N))
+                -> keys classifier.0.* and classifier.3.*
+
+        Loading a checkpoint of the second kind into a head of the first kind
+        raises a shape/key error, which (before this change) got swallowed and
+        left an untrained random head in place. Detecting the layout from the
+        checkpoint itself means either notebook's output loads correctly.
+
+        Raises ValueError on any head layout that isn't one of the two above,
+        rather than guessing — a wrong guess here reintroduces exactly the
+        silent-garbage failure mode this audit is trying to remove.
+        """
+        linear_layers = sorted(
+            (int(k.split(".")[1]), tuple(v.shape))
+            for k, v in state_dict.items()
+            if k.startswith("classifier.") and k.endswith(".weight") and getattr(v, "ndim", 0) == 2
+        )
+
+        if not linear_layers:
+            raise ValueError(
+                "Checkpoint contains no 'classifier.*.weight' 2-D tensors; its "
+                "classification head could not be identified."
+            )
+
+        if len(linear_layers) == 1:
+            idx, (out_f, in_f) = linear_layers[0]
+            if in_f != num_features:
+                raise ValueError(
+                    f"Checkpoint head expects {in_f} input features but the "
+                    f"DenseNet-169 backbone produces {num_features}."
+                )
+            if idx == 1:
+                return nn.Sequential(nn.Dropout(p=0.3), nn.Linear(in_f, out_f))
+            if idx == 0:
+                return nn.Sequential(nn.Linear(in_f, out_f))
+            raise ValueError(f"Unrecognized single-Linear head at classifier.{idx}.")
+
+        if len(linear_layers) == 2:
+            (idx_a, (hidden, in_f)), (idx_b, (out_f, hidden_b)) = linear_layers
+            if (idx_a, idx_b) != (0, 3) or hidden != hidden_b:
+                raise ValueError(
+                    f"Unrecognized two-Linear head layout: indices {idx_a},{idx_b} "
+                    f"with shapes {hidden}x{in_f} and {out_f}x{hidden_b}."
+                )
+            if in_f != num_features:
+                raise ValueError(
+                    f"Checkpoint head expects {in_f} input features but the "
+                    f"DenseNet-169 backbone produces {num_features}."
+                )
+            return nn.Sequential(
+                nn.Linear(in_f, hidden),
+                nn.ReLU(),
+                nn.Dropout(0.3),
+                nn.Linear(hidden, out_f),
+            )
+
+        raise ValueError(
+            f"Checkpoint head has {len(linear_layers)} Linear layers; only the "
+            "1- and 2-Linear layouts used in this repo are supported."
+        )
+
     def load_weights(self, weights_path: str):
-        """Loads state dict into model."""
+        """
+        Loads state dict into model.
+
+        On failure this does NOT raise: it records the reason in
+        `self.weights_load_error` and leaves `self.weights_loaded` False, so
+        the model keeps whatever head it had before (random, if this was
+        called from __init__). Callers that need a hard failure instead of a
+        silent untrained fallback (e.g. scripts/evaluate.py, which must never
+        report metrics for a model that didn't actually load) should check
+        `weights_loaded` / `weights_load_error` after calling this and abort
+        themselves — see scripts/evaluate.py for that pattern.
+        """
         try:
             checkpoint = torch.load(weights_path, map_location=self.device)
-            if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-                self.model.load_state_dict(checkpoint["state_dict"])
-            elif isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                self.model.load_state_dict(checkpoint["model_state_dict"])
-            elif isinstance(checkpoint, dict):
-                self.model.load_state_dict(checkpoint)
-            else:
+            state_dict = self._extract_state_dict(checkpoint)
+
+            if state_dict is None:
+                # A pickled whole-model object rather than a state_dict.
                 self.model = checkpoint
+            else:
+                num_features = 1664  # DenseNet-169 final feature width
+                head = self._build_head_from_state_dict(state_dict, num_features)
+
+                # The checkpoint decides the class count, not the mapping file.
+                # If they disagree, the labels shown to the user would be
+                # silently wrong (index N meaning a different disease than the
+                # mapping claims), so refuse rather than mislabel.
+                checkpoint_classes = head[-1].out_features
+                if checkpoint_classes != len(self.idx_to_class):
+                    raise ValueError(
+                        f"Checkpoint has {checkpoint_classes} output classes but "
+                        f"the loaded class mapping has {len(self.idx_to_class)} "
+                        "entries. Refusing to load: predictions would be labelled "
+                        "with the wrong disease names. Point class_mapping_path at "
+                        "the mapping exported by the same training run as this "
+                        "checkpoint."
+                    )
+
+                self.model.classifier = head
+                self.model.load_state_dict(state_dict, strict=True)
+                self.num_classes = checkpoint_classes
+
             self.weights_loaded = True
+            self.weights_load_error = None
             print(f"[DiseaseClassifier] Successfully loaded weights from {weights_path}")
         except Exception as e:
-            print(f"[DiseaseClassifier] Failed to load checkpoint {weights_path}: {e}")
+            self.weights_loaded = False
+            self.weights_load_error = f"Failed to load checkpoint {weights_path}: {e}"
+            print(
+                f"[DiseaseClassifier] ERROR: {self.weights_load_error}\n"
+                "[DiseaseClassifier] The classification head remains UNTRAINED. "
+                "weights_loaded=False. This is commonly a shape/key mismatch "
+                "between the saved state_dict and _build_model()'s head — "
+                "check that the checkpoint's classifier architecture matches "
+                "the Dropout+Linear head defined here."
+            )
 
     KNOWN_CROPS = [
         "Pepper__bell", "Pepper bell", "Pepper,_bell", "Pepper", "Potato",
@@ -291,4 +439,8 @@ class DiseaseClassifier:
             "confidence": top_1_conf,
             "advice": parsed["advice"],
             "top_k": top_k_list,
+            # Callers MUST check this before presenting any of the fields
+            # above as a diagnosis. False means the classification head is
+            # untrained and every field above is meaningless noise.
+            "weights_loaded": self.weights_loaded,
         }

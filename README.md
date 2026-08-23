@@ -1,193 +1,299 @@
-# 🌿 Plant Disease Detection & Visual Diagnostic Pipeline
+# plant-disease-densenet169
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.1%2B-ee4c2c.svg)](https://pytorch.org/)
-[![Model](https://img.shields.io/badge/Backbone-DenseNet--169-brightgreen.svg)](https://pytorch.org/vision/main/models/densenet.html)
-[![Gradio](https://img.shields.io/badge/UI-Gradio-orange.svg)](https://gradio.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An end-to-end computer vision pipeline combining **leaf localization** with fine-tuned **DenseNet169** transfer learning to diagnose crop leaf pathologies and generate real-time bounding box visual overlays.
+A two-stage leaf disease classifier: OpenCV contour/HSV segmentation localises a
+leaf in the frame, then a fine-tuned DenseNet-169 classifies the cropped region.
+A Gradio app wraps both stages.
 
----
+This is a learning/research project. It is not validated for agricultural
+decision-making, and the "Known limitations" section below is the most important
+part of this file.
 
-## 📌 Project Overview
+## Measured Evaluation Metrics (PlantVillage Dataset)
 
-This project provides a modern, modular computer vision pipeline for agricultural disease diagnosis. 
+The metrics below were measured on the validation partition (4,134 images across 15 classes) using [`scripts/evaluate.py`](scripts/evaluate.py) on the fine-tuned DenseNet-169 checkpoint. Full evaluation outputs and per-class statistics are recorded in [`reports/plantvillage_eval.json`](reports/plantvillage_eval.json).
 
-Standard deep learning classifiers often suffer when background noise, multiple plants, or varying distances are present in unconstrained field photographs. This pipeline addresses that challenge with a **two-stage diagnostic architecture**:
+| Metric | Value | Produced by / Source |
+| :--- | :--- | :--- |
+| **Validation accuracy (single checkpoint)** | **97.80%** (4,043 / 4,134) | `reports/plantvillage_eval.json` |
+| **Macro F1** | **0.9765** (97.65%) | `reports/plantvillage_eval.json` |
+| **Weighted F1** | **0.9780** (97.80%) | `reports/plantvillage_eval.json` |
+| **Mean top-1 confidence (correct predictions)** | **98.06%** (median: 99.98%) | `reports/plantvillage_eval.json` |
+| **Mean top-1 confidence (incorrect predictions)** | **69.57%** (median: 68.20%) | `reports/plantvillage_eval.json` |
+| **Field-photo accuracy** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
+| **Localisation failure rate on field photos** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
 
-1. **Localization Stage:** Detects and extracts the primary leaf region within an image using contour/color morphology segmentation or YOLOv8.
-2. **Classification Stage:** Processes the cropped Region of Interest (ROI) through a fine-tuned **DenseNet-169** deep convolutional network to classify disease states across 38 distinct crop-pathology categories.
-3. **Visual Overlay Engine:** Uses OpenCV to render dynamic HUD bounding box overlays, diagnostic status badges, and confidence metrics directly onto the original image.
-4. **Agronomic Recommendations:** Provides actionable treatment tips and management strategies based on the identified disease condition.
+### Per-Class Performance Breakdown (15 Classes)
 
----
+| Class Name | Precision | Recall | F1-Score | Support (Images) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Pepper (bell): Bacterial spot** | 0.9950 | 0.9900 | **0.9925** | 200 |
+| **Pepper (bell): Healthy** | 0.9966 | 0.9966 | **0.9966** | 296 |
+| **Potato: Early blight** | 1.0000 | 0.9900 | **0.9950** | 200 |
+| **Potato: Late blight** | 0.9754 | 0.9900 | **0.9826** | 200 |
+| **Potato: Healthy** | 1.0000 | 0.9677 | **0.9836** | 31 |
+| **Tomato: Bacterial spot** | 0.9976 | 0.9883 | **0.9929** | 426 |
+| **Tomato: Early blight** | 0.9048 | 0.9500 | **0.9268** | 200 |
+| **Tomato: Late blight** | 0.9917 | 0.9398 | **0.9651** | 382 |
+| **Tomato: Leaf Mold** | 0.9641 | 0.9843 | **0.9741** | 191 |
+| **Tomato: Septoria leaf spot** | 0.9488 | 0.9915 | **0.9697** | 355 |
+| **Tomato: Spider mites (Two-spotted)** | 0.9354 | 0.9911 | **0.9624** | 336 |
+| **Tomato: Target Spot** | 0.9807 | 0.9039 | **0.9407** | 281 |
+| **Tomato: Yellow Leaf Curl Virus** | 0.9969 | 0.9953 | **0.9961** | 642 |
+| **Tomato: Mosaic virus** | 0.9615 | 1.0000 | **0.9804** | 75 |
+| **Tomato: Healthy** | 0.9968 | 0.9812 | **0.9889** | 319 |
+| **Overall Dataset Total** | — | — | **0.9780** | **4,134** |
 
-## 🏗️ System Architecture
+> **Confusion Matrix**: Visualized matrix plot is saved at [`reports/plantvillage_eval.confusion.png`](reports/plantvillage_eval.confusion.png).
 
-```
-[ Input Image (RGB) ]
-        │
-        ▼
-┌───────────────────────────────────────────────────────────┐
-│ Stage 1: Leaf Localization Engine                         │
-│ • OpenCV Contour / HSV Color Space Morphology             │
-│ • Optional YOLOv8 Foliage Detection Integration           │
-│ ──► Generates Bounding Box Coordinates: [x1, y1, x2, y2]  │
-└─────────────────────────────┬─────────────────────────────┘
-                              │
-                              ▼ (ROI Crop)
-┌───────────────────────────────────────────────────────────┐
-│ Stage 2: DenseNet-169 Feature Extractor & Classifier      │
-│ • 169-layer Densely Connected Convolutional Network       │
-│ • Custom Dropout (p=0.3) + Linear Head                    │
-│ ──► Outputs Softmax Logits & Top-K Class Probabilities    │
-└─────────────────────────────┬─────────────────────────────┘
-                              │
-                              ▼
-┌───────────────────────────────────────────────────────────┐
-│ Stage 3: Visual Overlay & Diagnostic Summary Engine       │
-│ • OpenCV Bounding Box + Status Badge (Healthy/Pathology)  │
-│ • Matplotlib Horizontal Probability Distribution Chart    │
-│ • Agronomic Action Advice Generation                      │
-└─────────────────────────────┬─────────────────────────────┘
-                              │
-                              ▼
-[ Annotated Image + Diagnostic Report + Probability Chart ]
-```
+The training notebook printed `Best val_acc=0.9686`. That number is **not**
+reported above as a result, for two reasons:
 
----
+1. It is the maximum over 15 epochs on the split that was used to choose which
+   checkpoint to keep. Taking a maximum over 15 noisy estimates biases the value
+   upward; it is a selection statistic, not a performance estimate.
+2. The same split drove `ReduceLROnPlateau` and the save-on-improvement logic,
+   so it influenced training as well as selection.
 
-## 📂 Directory Structure
+`scripts/evaluate.py` reports a single-checkpoint number on the same split,
+which removes the max-over-epochs bias but not the selection bias. There is no
+sealed partition of this dataset. See "Getting an unbiased number".
 
-```plaintext
-plant-disease-densenet169/
-├── .github/
-│   └── workflows/
-│       └── python-app.yml       # CI workflow for linting & syntax verification
-├── assets/                      # Demo images, architecture diagrams for README
-├── data/                        # Local testing samples (git-ignored)
-│   ├── raw/
-│   └── samples/
-├── models/                      # Checkpoints & mappings (weights git-ignored)
-│   ├── class_mapping.json       # Exported index-to-class dictionary (38 classes)
-│   └── .gitkeep
-├── notebooks/                   # Google Colab / Jupyter exploration
-│   └── 01_densenet169_training_pipeline.ipynb
-├── src/                         # Modular Python package
-│   ├── __init__.py
-│   ├── detector.py              # Leaf localization logic (YOLOv8 / Contours)
-│   ├── classifier.py            # DenseNet169 model definition & loading
-│   ├── visualizer.py            # OpenCV bounding box & label overlay rendering
-│   └── pipeline.py              # Two-stage inference pipeline coordinator
-├── app.py                       # Gradio Web UI (Hugging Face Spaces entrypoint)
-├── .gitignore                   # Ignores data, checkpoints, venv, cache
-├── LICENSE                      # MIT License
-├── README.md                    # Project documentation & architectural breakdown
-└── requirements.txt             # Project dependencies
-```
+## Class coverage
 
----
+The class list is read at runtime from `models/class_mapping.json`; the app and
+both evaluation scripts derive their class count from that file rather than
+assuming a number.
 
-## 🌿 Supported Classes (PlantVillage 38 Classes)
+**The checked-in mapping has 15 classes, not 38.** It covers Pepper (bell),
+Potato and Tomato only. The training notebook downloads the Kaggle mirror
+`emmarex/plantdisease`, which is the 15-class subset of PlantVillage, not the
+full 38-class release. Earlier versions of this README and the app claimed 38
+classes; that claim was wrong. If you retrain on the full 38-class dataset,
+re-export the mapping and the app will pick up the change automatically.
 
-| Crop | Supported Conditions / Pathologies |
-| :--- | :--- |
-| **Apple** | Apple Scab, Black Rot, Cedar Apple Rust, Healthy |
-| **Blueberry** | Healthy |
-| **Cherry** | Powdery Mildew, Healthy |
-| **Corn (Maize)** | Cercospora / Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy |
-| **Grape** | Black Rot, Esca (Black Measles), Leaf Blight (Isariopsis), Healthy |
-| **Orange** | Citrus Greening (Huanglongbing) |
-| **Peach** | Bacterial Spot, Healthy |
-| **Pepper (Bell)** | Bacterial Spot, Healthy |
-| **Potato** | Early Blight, Late Blight, Healthy |
-| **Raspberry** | Healthy |
-| **Soybean** | Healthy |
-| **Squash** | Powdery Mildew |
-| **Strawberry** | Leaf Scorch, Healthy |
-| **Tomato** | Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Yellow Leaf Curl Virus, Mosaic Virus, Healthy |
+## Model weights
 
----
+The checkpoint is roughly 50 MB and is not in this repository — `.gitignore`
+excludes `*.pth`. It is resolved at startup by `src/weights.py` in this order:
 
-## 🚀 Quickstart & Setup
+1. `models/densenet169_plant_disease.pth`, if present. A local file always wins,
+   so a development loop never needs the network.
+2. Hugging Face Hub, via `huggingface_hub.hf_hub_download`, cached locally so it
+   downloads once.
 
-### 1. Clone & Set Up Environment
+Configure the Hub source with environment variables:
+
 ```bash
-git clone https://github.com/<your-username>/plant-disease-densenet169.git
+export PLANT_DISEASE_HF_REPO_ID="<your-username>/plant-disease-densenet169"
+export PLANT_DISEASE_HF_FILENAME="densenet169_plant_disease.pth"   # optional
+```
+
+The default repo ID is the literal placeholder `CHANGE_ME/plant-disease-densenet169`.
+It is a placeholder on purpose: a plausible-looking default would fail with a 404
+that is hard to distinguish from "not configured yet".
+
+**If no checkpoint resolves, the app does not fall back to something usable.**
+The DenseNet-169 backbone is ImageNet-pretrained but the classification head is
+randomly initialised until a checkpoint loads. Without one the model emits noise.
+The app starts, shows a persistent warning banner, and replaces every result with
+an explicit "untrained model" notice instead of a diagnosis. See "The bug this
+audit fixed".
+
+## Setup
+
+```bash
+git clone https://github.com/Pushkar0997/plant-disease-densenet169.git
 cd plant-disease-densenet169
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# On Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-# On Linux / macOS:
-source venv/bin/activate
-
-# Install dependencies
+python -m venv venv && source venv/bin/activate    # Windows: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### 2. Run the Gradio Web Application
-```bash
 python app.py
 ```
-Open your browser at `http://127.0.0.1:7860` to access the interactive diagnostic interface.
 
-### 3. Programmatic Usage in Python
-```python
-from src.pipeline import PlantDiagnosticPipeline
-from PIL import Image
+The app serves at `http://127.0.0.1:7860`.
 
-# Initialize pipeline
-pipeline = PlantDiagnosticPipeline(
-    classifier_weights_path="models/densenet169_plant_disease.pth",
-    class_mapping_path="models/class_mapping.json"
-)
+## Evaluation scripts
 
-# Run diagnostic inference
-image = Image.open("data/samples/sample_leaf.jpg")
-result = pipeline.run(image, top_k=5)
+Both are meant to run on Colab, where the dataset and GPU are. Both refuse to
+emit metrics if the checkpoint fails to load, rather than reporting numbers for
+an untrained model.
 
-print(f"Diagnosed Condition: {result['display_name']}")
-print(f"Confidence: {result['confidence'] * 100:.2f}%")
-print(f"Status: {'Healthy' if result['is_healthy'] else 'Pathology Detected'}")
-print(f"Recommended Action: {result['advice']}")
+### `scripts/evaluate.py` — PlantVillage
 
-# Save or display annotated image
-annotated_img = Image.fromarray(result["annotated_image"])
-annotated_img.save("data/samples/annotated_result.jpg")
-```
-
----
-
-## 🔬 Model Training & Fine-Tuning
-
-The full training pipeline is provided in [`notebooks/01_densenet169_training_pipeline.ipynb`](file:///d:/Coding_Work/plant-disease-densenet169/notebooks/01_densenet169_training_pipeline.ipynb).
-
-### Training Highlights:
-- **Architecture:** DenseNet-169 with custom Dropout (0.3) + Linear classification head.
-- **Augmentation:** Random resized crop, horizontal/vertical flips, affine rotations, and color jittering.
-- **Optimization:** AdamW optimizer (`lr=3e-4`, `weight_decay=1e-4`) with Cosine Annealing learning rate schedule.
-- **Mixed Precision:** Automatic Mixed Precision (`torch.cuda.amp`) for accelerated GPU computation.
-- **Regularization:** Cross-entropy loss with label smoothing (`0.1`).
-
----
-
-## 🚢 Deployment to Hugging Face Spaces
-
-1. Create a new Space on [Hugging Face Spaces](https://huggingface.co/spaces) selecting **Gradio** as the SDK.
-2. Push this repository:
 ```bash
-git remote add space https://huggingface.co/spaces/<your-username>/<your-space-name>
-git push space main
+python scripts/evaluate.py \
+    --data-root /content/plantvillage_data/raw \
+    --checkpoint /content/densenet169_plantvillage.pth \
+    --class-mapping models/class_mapping.json \
+    --output reports/plantvillage_eval.json
 ```
-The `app.py` and `requirements.txt` in the root directory will automatically build and launch the application.
 
----
+Reports overall accuracy, macro and weighted F1, per-class precision/recall/F1,
+a confusion matrix as JSON and PNG, and mean/median top-1 confidence split by
+whether the prediction was correct. Everything lands in the JSON.
 
-## 📜 License
+Two flags change what is being measured and are worth running both ways:
 
-This project is open-source under the [MIT License](file:///d:/Coding_Work/plant-disease-densenet169/LICENSE).
+- `--split-order sorted|filesystem`. The notebook's split is not exactly
+  reproducible (see "Known limitations"). `sorted` is deterministic; `filesystem`
+  mimics the notebook including its nondeterminism.
+- `--preprocess notebook|app`. The notebook trains and validates with
+  `Resize((224,224))`; `src/classifier.py` infers with `Resize(256) +
+  CenterCrop(224)`. These are different input distributions. The gap between the
+  two modes is what the deployed app loses to that mismatch.
+
+### `scripts/evaluate_field.py` — field photographs
+
+```bash
+python scripts/evaluate_field.py \
+    --images-dir data/field \
+    --labels-csv data/field/labels.csv \
+    --checkpoint /content/densenet169_plantvillage.pth \
+    --output reports/field_eval.json
+```
+
+Runs the **full** pipeline, localisation included, because stage 1 is the part
+most likely to fail on real photos. The labels CSV is `filename,label` with a
+header, where `label` exactly matches a class name in the mapping.
+
+Reports accuracy, the confidence distribution for comparison against the
+PlantVillage numbers, and how often localisation returned a box covering most of
+the frame — the contour segmenter's failure signature, meaning stage 1 is
+effectively not running.
+
+Every rate carries a Wilson 95% confidence interval. At 20-30 photos those
+intervals are wide: at n=25, an observed 68% spans roughly 48-83%. The script
+prints a sample-size warning in its output and its JSON. This is a smoke test,
+not a measurement.
+
+## Getting an unbiased number
+
+Nothing computed from the current training run is a held-out estimate. The
+notebook splits train/val only; the training loop saved a checkpoint on every
+val-accuracy improvement and stepped the LR scheduler on the same signal. Every
+image influenced the result through training or through selection.
+
+Slicing a piece out of val does not fix this — that slice still contributed to
+the accuracy statistic that picked the checkpoint. `scripts/evaluate.py`
+therefore never labels anything "test".
+
+The only fix is to retrain: carve a test partition first, never load it during
+training, select on val, evaluate once on test. Until that happens, describe the
+number as validation accuracy and say it is selection-biased.
+
+## The bug this audit fixed
+
+`app.py` pointed at `models/densenet169_plant_disease.pth`, which `.gitignore`
+excludes, so a fresh clone had no checkpoint. `src/classifier.py` handled the
+missing file by printing "Running with pre-configured weights" and continuing —
+but nothing was pre-configured. `_build_model` attaches a randomly initialised
+`Dropout + Linear` head to the ImageNet backbone.
+
+A fresh clone therefore ran a random 38-way head over ImageNet features and
+presented the output as a diagnosis with a red "PATHOLOGY DETECTED" badge and
+treatment advice. An observed example: "Pepper Bell: Bacterial Spot" at 10.0%
+confidence, against a 1/15 ≈ 6.7% chance baseline for the checked-in mapping.
+
+The misleading badge was not only in the report text. `Visualizer.draw_overlay`
+rendered the red status directly into the annotated image pixels, so fixing the
+markdown alone would have left a confidently-coloured image.
+
+What changed:
+
+- `DiseaseClassifier.weights_loaded` is authoritative and is returned from
+  `predict()`. The misleading log message is replaced with an explicit warning.
+- `PlantDiagnosticPipeline.run` computes a `status` of `diagnosed`,
+  `low_confidence` or `untrained`. `is_healthy` is `None` and agronomic advice is
+  replaced with a safety explanation for anything that is not `diagnosed`.
+- `Visualizer.draw_overlay` takes that status instead of an `is_healthy` boolean,
+  so an untrained or low-confidence result is structurally incapable of getting a
+  red/green health badge.
+- The app shows a persistent startup banner when no checkpoint is loaded.
+- `dry_run.py` had the same bug and got the same fix.
+- Checkpoint loading now auto-detects the head layout and refuses to load a
+  checkpoint whose class count disagrees with the mapping.
+
+## Known limitations
+
+**PlantVillage is lab-condition imagery.** Single leaves, uniform backgrounds,
+controlled lighting. Accuracy on it does not transfer to field photographs with
+soil, sky, overlapping leaves and hard shadows. The two-stage architecture exists
+because field photos are messy, which means the PlantVillage number does not
+measure the thing the pipeline was built for. This is what
+`scripts/evaluate_field.py` is for.
+
+**Localisation defaults to contour/HSV segmentation.** `LeafDetector` uses
+OpenCV HSV masking plus contour analysis unless a `yolo_model_path` is passed
+explicitly. Nothing in `app.py` passes one, so the default path is always
+contour segmentation. YOLOv8 is optional and off by default. Even when enabled it
+would be COCO-pretrained, and COCO has no leaf or plant class — the training
+notebook says as much in its own notes. Descriptions of this project as
+"YOLOv8-based" would be inaccurate.
+
+**The segmenter's confidence score is not a confidence.**
+`_contour_segmentation_detection` computes it as
+`clip(0.65 + area_ratio * 0.3, 0.50, 0.95)` — a function of bounding box area,
+not of any evidence that a leaf was found. A larger box scores higher, so the
+score is highest exactly when segmentation has failed and returned most of the
+frame. The "Localization Confidence Threshold" slider does not filter on it.
+
+**The confidence floor is uncalibrated.** The 0.40 default was chosen without
+evidence. Run `scripts/evaluate.py` and compare the confidence distributions for
+correct and incorrect predictions: if they overlap heavily, no threshold
+separates them and the floor is doing less than it appears. Pick the value from
+that data. It is exposed in the UI and as a script flag so it can be changed
+without editing code.
+
+**Training and inference preprocess differently.** Training uses
+`Resize((224,224))`; inference uses `Resize(256) + CenterCrop(224)`, which
+rescales differently and crops the frame edges. Unquantified until
+`scripts/evaluate.py --preprocess` is run both ways.
+
+**Two notebooks, only one of which trains.**
+`notebooks/plantvillage_densenet169_pipeline.ipynb` is the working one: it
+downloads the data, builds the split, and runs the training loop. It freezes the
+backbone and trains only the head, with a `Linear(1664,512) → ReLU → Dropout →
+Linear(512,N)` classifier.
+
+`notebooks/01_densenet169_training_pipeline.ipynb` is a skeleton. It defines
+transforms, a model, an optimizer and train/validate functions, but contains no
+dataset loading, no dataloaders and no epoch loop. Its final cell saves
+`model.state_dict()` — so running it top to bottom writes an **untrained** head
+to `models/densenet169_plant_disease.pth`, which is precisely the failure this
+audit is about. It also builds a different head (`Dropout → Linear`) and declares
+`num_classes: 38`, matching neither the other notebook nor the checked-in
+mapping. Treat it as unused, or delete it.
+
+Checkpoint loading now detects which of the two head layouts a file contains and
+adapts, so either notebook's output loads. A class-count disagreement between
+checkpoint and mapping is refused outright, since it would silently attach wrong
+disease names to predictions.
+
+**Observed failure modes.** Running the app without a checkpoint produced a
+confident-looking "Pepper Bell: Bacterial Spot — PATHOLOGY DETECTED" at 10.0%
+confidence. This is fixed, but it is the concrete illustration of why the
+untrained state now fails loudly.
+
+## Repository layout
+
+```
+app.py                      Gradio interface
+dry_run.py                  CLI smoke test on data/samples
+src/
+  detector.py               Stage 1: contour/HSV localisation, optional YOLOv8
+  classifier.py             Stage 2: DenseNet-169, checkpoint loading, head detection
+  pipeline.py               Coordinates both stages, computes diagnosis status
+  visualizer.py             Bounding box overlay and top-k chart
+  weights.py                Local-then-Hub checkpoint resolution
+scripts/
+  evaluate.py               PlantVillage metrics report
+  evaluate_field.py         Field-photo metrics report
+models/class_mapping.json   Index to class name (15 classes)
+notebooks/                  See "Two notebooks" above
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
