@@ -12,12 +12,19 @@ from PIL import Image
 from src.pipeline import PlantDiagnosticPipeline
 from src.weights import resolve_weights_path
 
-# Default confidence floor for classification (Task 3). Chosen without
-# calibration data — see the README's "Known limitations" section. Once
-# scripts/evaluate.py has run, re-check this against the actual confidence
-# distributions for correct vs. incorrect predictions rather than trusting
-# this number.
-DEFAULT_CONFIDENCE_FLOOR = 0.40
+# Default confidence floor for classification (Task 3). Chosen from the
+# threshold sweep in reports/plantvillage_eval.json, not guessed.
+#
+# At the original 0.40 the floor caught 0 of 91 validation errors while
+# costing 2 correct predictions — it did nothing. At 0.80: coverage 95.3%,
+# selective accuracy 99.31% (up from 97.80%), 64 of 91 errors suppressed at
+# a cost of 132 correct predictions reclassified as "not confident".
+#
+# Tuned on PlantVillage, which is lab-condition data where correct
+# predictions cluster near 1.0. Field photographs will score lower overall,
+# so this floor may abstain considerably more often out of distribution.
+# Re-check against reports/field_eval.json once that exists.
+DEFAULT_CONFIDENCE_FLOOR = 0.80
 
 
 # Configuration & Paths
