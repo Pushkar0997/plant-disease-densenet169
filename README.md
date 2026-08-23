@@ -84,16 +84,17 @@ excludes `*.pth`. It is resolved at startup by `src/weights.py` in this order:
 2. Hugging Face Hub, via `huggingface_hub.hf_hub_download`, cached locally so it
    downloads once.
 
-Configure the Hub source with environment variables:
+The default Hub source is
+[`PushkarKumar/plant-disease-densenet169`](https://huggingface.co/PushkarKumar/plant-disease-densenet169),
+so a fresh clone with no local checkpoint downloads it automatically and the app
+works without any configuration.
+
+To use your own fine-tune instead, override with environment variables:
 
 ```bash
 export PLANT_DISEASE_HF_REPO_ID="<your-username>/plant-disease-densenet169"
 export PLANT_DISEASE_HF_FILENAME="densenet169_plant_disease.pth"   # optional
 ```
-
-The default repo ID is the literal placeholder `CHANGE_ME/plant-disease-densenet169`.
-It is a placeholder on purpose: a plausible-looking default would fail with a 404
-that is hard to distinguish from "not configured yet".
 
 **If no checkpoint resolves, the app does not fall back to something usable.**
 The DenseNet-169 backbone is ImageNet-pretrained but the classification head is
