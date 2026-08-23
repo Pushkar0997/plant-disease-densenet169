@@ -22,8 +22,8 @@ The metrics below were measured on the validation partition (4,134 images across
 | **Weighted F1** | **0.9780** (97.80%) | `reports/plantvillage_eval.json` |
 | **Mean top-1 confidence (correct predictions)** | **98.06%** (median: 99.98%) | `reports/plantvillage_eval.json` |
 | **Mean top-1 confidence (incorrect predictions)** | **69.57%** (median: 68.20%) | `reports/plantvillage_eval.json` |
-| **Field-photo accuracy** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
-| **Localisation failure rate on field photos** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
+| **Field-photo accuracy** | Not measured | `scripts/evaluate_field.py` |
+| **Localisation failure rate on field photos** | Not measured | `scripts/evaluate_field.py` |
 
 ### Per-Class Performance Breakdown (15 Classes)
 
@@ -239,12 +239,18 @@ not of any evidence that a leaf was found. A larger box scores higher, so the
 score is highest exactly when segmentation has failed and returned most of the
 frame. The "Localization Confidence Threshold" slider does not filter on it.
 
-**The confidence floor is uncalibrated.** The 0.40 default was chosen without
-evidence. Run `scripts/evaluate.py` and compare the confidence distributions for
-correct and incorrect predictions: if they overlap heavily, no threshold
-separates them and the floor is doing less than it appears. Pick the value from
-that data. It is exposed in the UI and as a script flag so it can be changed
-without editing code.
+**The confidence floor is calibrated on lab data only.** The default floor
+(`DEFAULT_CONFIDENCE_FLOOR = 0.80` in `app.py`) was selected from the threshold
+sweep in `reports/plantvillage_eval.json` rather than guessed. The previous 0.40
+default suppressed zero of the 91 validation errors while costing 2 correct
+predictions — it was doing nothing. At 0.80, coverage is 95.3% (3,938 of 4,134
+images diagnosed), selective accuracy is 99.31% (up from 97.80%), and 64 of 91
+validation errors are suppressed at a cost of 132 correct predictions
+reclassified as unconfident. However, the sweep was measured on PlantVillage,
+which is lab-condition data where correct predictions cluster near 1.0, so the
+floor may abstain considerably more often on field photographs — and this is
+untested because `scripts/evaluate_field.py` has not been run. The floor remains
+adjustable in the Gradio UI and via script flags.
 
 **Training and inference preprocess differently.** Training uses
 `Resize((224,224))`; inference uses `Resize(256) + CenterCrop(224)`, which
