@@ -19,6 +19,7 @@ if sys.platform == "win32":
 
 from PIL import Image
 from src.pipeline import PlantDiagnosticPipeline
+from src.weights import resolve_weights_path
 
 
 def run_dry_test(image_path: Optional[str] = None, save_output: bool = True):
@@ -54,29 +55,42 @@ def run_dry_test(image_path: Optional[str] = None, save_output: bool = True):
     weights_path = os.path.join("models", "densenet169_plant_disease.pth")
     mapping_path = os.path.join("models", "class_mapping.json")
 
+    weights_resolution = resolve_weights_path(local_path=weights_path)
+    if weights_resolution.error:
+        print(f"  [!] Checkpoint resolution: {weights_resolution.error}")
+
     pipeline = PlantDiagnosticPipeline(
-        classifier_weights_path=weights_path if os.path.exists(weights_path) else None,
+        classifier_weights_path=weights_resolution.path,
         class_mapping_path=mapping_path,
         detector_confidence=0.35
     )
 
     # 3. Run Inference
     print("\n[3/4] Running Diagnostic Inference (Localization -> Classification -> Overlay)...")
-    result = pipeline.run(image, top_k=5)
+    result = pipeline.run(image, top_k=5, confidence_threshold=0.40)
 
     # 4. Display Results
     print("\n[4/4] Diagnostic Summary Results:")
     print("-" * 55)
-    print(f"  * Diagnosed Crop:       {result['crop']}")
-    print(f"  * Pathology Condition:  {result['condition']}")
-    print(f"  * Full Label:           {result['display_name']}")
-    print(f"  * Confidence Score:     {result['confidence'] * 100:.2f}%")
-    print(f"  * Health Status:        {'HEALTHY' if result['is_healthy'] else 'PATHOLOGY DETECTED'}")
+    if result["status"] == "untrained":
+        print("  [!] UNTRAINED MODEL — the lines below are NOT a diagnosis.")
+        print(f"  * {result['advice']}")
+        print(f"  * Raw (meaningless) top-1 label: {result['display_name']} ({result['confidence'] * 100:.2f}%)")
+    elif result["status"] == "low_confidence":
+        print("  [!] LOW CONFIDENCE — below the 0.40 floor, not treated as a diagnosis.")
+        print(f"  * Best guess:            {result['display_name']} ({result['confidence'] * 100:.2f}%)")
+        print(f"  * {result['advice']}")
+    else:
+        print(f"  * Diagnosed Crop:       {result['crop']}")
+        print(f"  * Pathology Condition:  {result['condition']}")
+        print(f"  * Full Label:           {result['display_name']}")
+        print(f"  * Confidence Score:     {result['confidence'] * 100:.2f}%")
+        print(f"  * Health Status:        {'HEALTHY' if result['is_healthy'] else 'PATHOLOGY DETECTED'}")
+        print(f"  * Agronomic Advice:     {result['advice']}")
     print(f"  * Leaf Bounding Box:    {result['bbox']}")
     print(f"  * Localization Method:  {result['localization_method']}")
-    print(f"  * Agronomic Advice:     {result['advice']}")
     print("-" * 55)
-    print("  * Top-5 Class Distributions:")
+    print(f"  * Top-5 Class Distributions ({'meaningless — untrained' if result['status'] != 'diagnosed' else 'raw scores'}):")
     for rank, item in enumerate(result['top_k'], 1):
         print(f"    {rank}. {item['display_name']:<35} -> {item['probability'] * 100:.2f}%")
     print("-" * 55)

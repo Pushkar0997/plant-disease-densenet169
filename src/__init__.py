@@ -7,6 +7,7 @@ from .detector import LeafDetector
 from .classifier import DiseaseClassifier
 from .visualizer import Visualizer
 from .pipeline import PlantDiagnosticPipeline
+from .weights import resolve_weights_path, WeightsResolution
 
 __version__ = "1.0.0"
 __all__ = [
@@ -14,4 +15,6 @@ __all__ = [
     "DiseaseClassifier",
     "Visualizer",
     "PlantDiagnosticPipeline",
+    "resolve_weights_path",
+    "WeightsResolution",
 ]
