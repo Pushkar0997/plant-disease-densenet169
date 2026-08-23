@@ -1,0 +1,272 @@
+[
+  {
+    "new_name": "pepper_bell_bacterial_spot_01.jpg",
+    "class": "Pepper__bell___Bacterial_spot",
+    "original_filename": "d2e908d9-71d4-451a-b77d-6152c4a91957___JR_B.Spot 3175.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "pepper_bell_bacterial_spot_02.jpg",
+    "class": "Pepper__bell___Bacterial_spot",
+    "original_filename": "9be6504b-0be3-4169-80dd-139f579504a3___JR_B.Spot 8963.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "pepper_bell_bacterial_spot_03.jpg",
+    "class": "Pepper__bell___Bacterial_spot",
+    "original_filename": "6e1e07ba-212d-4494-b8bf-73d12d720c20___JR_B.Spot 3392.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "pepper_bell_healthy_01.jpg",
+    "class": "Pepper__bell___healthy",
+    "original_filename": "b57eb9c4-59e7-4fc7-88e4-c9827304d118___JR_HL 8802.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "pepper_bell_healthy_02.jpg",
+    "class": "Pepper__bell___healthy",
+    "original_filename": "9f294825-ea53-4dba-b8a7-d1cb9a4fa8c2___JR_HL 7934.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "pepper_bell_healthy_03.jpg",
+    "class": "Pepper__bell___healthy",
+    "original_filename": "59d51855-3e02-4082-817a-b62184efadc3___JR_HL 8849.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_early_blight_01.jpg",
+    "class": "Potato___Early_blight",
+    "original_filename": "b8803558-9e0f-404e-80b3-c78d0bc7f6d0___RS_Early.B 7548.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_early_blight_02.jpg",
+    "class": "Potato___Early_blight",
+    "original_filename": "4af8e9e9-077d-4c7b-859d-626f74d3b1ff___RS_Early.B 7738.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_early_blight_03.jpg",
+    "class": "Potato___Early_blight",
+    "original_filename": "6319585f-ed2f-4657-ae79-a23db65d0fce___RS_Early.B 7033.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_late_blight_01.jpg",
+    "class": "Potato___Late_blight",
+    "original_filename": "49e55f8e-4d44-452c-8e59-d4c4f0ae1085___RS_LB 4333.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_late_blight_02.jpg",
+    "class": "Potato___Late_blight",
+    "original_filename": "9c3ad8d7-58cb-4e7d-85c0-22f5cf105906___RS_LB 4680.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_late_blight_03.jpg",
+    "class": "Potato___Late_blight",
+    "original_filename": "4afd8bf6-0e1e-4a85-a576-1e8995c88d5c___RS_LB 2505.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_healthy_01.jpg",
+    "class": "Potato___healthy",
+    "original_filename": "ad9b6cf4-e065-496d-91c7-5713ce14e19e___RS_HL 1926.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_healthy_02.jpg",
+    "class": "Potato___healthy",
+    "original_filename": "57c2663b-5d1d-4476-b067-38b2149c3b2d___RS_HL 1796.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "potato_healthy_03.jpg",
+    "class": "Potato___healthy",
+    "original_filename": "af15ac00-67ff-4114-ace8-6dca48b94665___RS_HL 1865.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_bacterial_spot_01.jpg",
+    "class": "Tomato_Bacterial_spot",
+    "original_filename": "669e40d9-4ef8-4f22-82c1-778bf0895ac6___GCREC_Bact.Sp 3166.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_bacterial_spot_02.jpg",
+    "class": "Tomato_Bacterial_spot",
+    "original_filename": "3811d01e-de9a-4159-8ab6-eb0e277f0acd___GCREC_Bact.Sp 3546.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_bacterial_spot_03.jpg",
+    "class": "Tomato_Bacterial_spot",
+    "original_filename": "f834fa07-fd63-4ff6-8a17-e13c02ac4878___GCREC_Bact.Sp 5693.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_early_blight_01.jpg",
+    "class": "Tomato_Early_blight",
+    "original_filename": "cab96269-77a2-47cd-bfdf-02ad2535293d___RS_Erly.B 8439.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_early_blight_02.jpg",
+    "class": "Tomato_Early_blight",
+    "original_filename": "73bbd57a-8733-4b2a-a38d-f304ea890c62___RS_Erly.B 9548.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_early_blight_03.jpg",
+    "class": "Tomato_Early_blight",
+    "original_filename": "64ef53fa-26cc-4734-8a94-6f83a108817f___RS_Erly.B 6348.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_late_blight_01.jpg",
+    "class": "Tomato_Late_blight",
+    "original_filename": "de8d11a4-24da-489d-9c88-0d7cf5344cdc___GHLB_PS Leaf 2.3 Day 16.jpg",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_late_blight_02.jpg",
+    "class": "Tomato_Late_blight",
+    "original_filename": "8243854c-24f1-49e5-b568-819ae3867a8c___RS_Late.B 7143.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_late_blight_03.jpg",
+    "class": "Tomato_Late_blight",
+    "original_filename": "b2a9abfe-731d-4143-a534-158a4aea4dd1___GHLB_PS Leaf 1.5 Day 13.jpg",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_leaf_mold_01.jpg",
+    "class": "Tomato_Leaf_Mold",
+    "original_filename": "c969f446-4098-43f5-a1ad-71b90d1078f6___Crnl_L.Mold 6615.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_leaf_mold_02.jpg",
+    "class": "Tomato_Leaf_Mold",
+    "original_filename": "8faa0c7e-33cd-43cd-8e71-bd9d19ba8e9f___Crnl_L.Mold 6763.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_leaf_mold_03.jpg",
+    "class": "Tomato_Leaf_Mold",
+    "original_filename": "447ca40f-8640-43d7-b7af-3372e8afbfba___Crnl_L.Mold 8870.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_septoria_leaf_spot_01.jpg",
+    "class": "Tomato_Septoria_leaf_spot",
+    "original_filename": "fc5b136a-102b-454a-8200-ddf85b2a0e52___Keller.St_CG 1898.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_septoria_leaf_spot_02.jpg",
+    "class": "Tomato_Septoria_leaf_spot",
+    "original_filename": "e74261a8-7e3a-43b5-a4de-16a7946b5d8f___Matt.S_CG 1049.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_septoria_leaf_spot_03.jpg",
+    "class": "Tomato_Septoria_leaf_spot",
+    "original_filename": "963549d4-2e44-4b10-8e73-9d955a80949c___Keller.St_CG 1946.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_spider_mites_two_spotted_spider_mite_01.jpg",
+    "class": "Tomato_Spider_mites_Two_spotted_spider_mite",
+    "original_filename": "2482ef02-b513-41ee-95df-81ae24ef55dd___Com.G_SpM_FL 8562.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_spider_mites_two_spotted_spider_mite_02.jpg",
+    "class": "Tomato_Spider_mites_Two_spotted_spider_mite",
+    "original_filename": "e421fcb0-be23-4ff8-a5f0-0ee7110160e5___Com.G_SpM_FL 1680.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_spider_mites_two_spotted_spider_mite_03.jpg",
+    "class": "Tomato_Spider_mites_Two_spotted_spider_mite",
+    "original_filename": "ba228541-4441-4e15-9d4d-7cd4aababf12___Com.G_SpM_FL 8453.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_target_spot_01.jpg",
+    "class": "Tomato__Target_Spot",
+    "original_filename": "a9513759-256d-427e-824f-de6585f9c7fb___Com.G_TgS_FL 8252.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_target_spot_02.jpg",
+    "class": "Tomato__Target_Spot",
+    "original_filename": "5f693474-3522-4b5e-adaa-2f55e407f45e___Com.G_TgS_FL 8049.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_target_spot_03.jpg",
+    "class": "Tomato__Target_Spot",
+    "original_filename": "0cb83b4d-281d-4b8f-a52a-8178fa8af907___Com.G_TgS_FL 7928.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_yellowleaf_curl_virus_01.jpg",
+    "class": "Tomato__Tomato_YellowLeaf__Curl_Virus",
+    "original_filename": "7651f6f6-39cb-4b5a-9daa-2160613c16bc___UF.GRC_YLCV_Lab 09603.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_yellowleaf_curl_virus_02.jpg",
+    "class": "Tomato__Tomato_YellowLeaf__Curl_Virus",
+    "original_filename": "685faff6-cb72-47fc-9df7-a881165fe3e7___YLCV_NREC 0069.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_yellowleaf_curl_virus_03.jpg",
+    "class": "Tomato__Tomato_YellowLeaf__Curl_Virus",
+    "original_filename": "4a881700-5f8f-4acb-841b-8d4f5e74b9f9___YLCV_NREC 2685.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_mosaic_virus_01.jpg",
+    "class": "Tomato__Tomato_mosaic_virus",
+    "original_filename": "c03d1596-7911-42f1-bbf3-3f3c052b3e76___PSU_CG 2223.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_mosaic_virus_02.jpg",
+    "class": "Tomato__Tomato_mosaic_virus",
+    "original_filename": "7d35f41d-27d1-4ff8-8527-54ca210a47b5___PSU_CG 2359.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_tomato_mosaic_virus_03.jpg",
+    "class": "Tomato__Tomato_mosaic_virus",
+    "original_filename": "629e19d4-c6f5-457f-9e17-80a1e77140fe___PSU_CG 2129.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_healthy_01.jpg",
+    "class": "Tomato_healthy",
+    "original_filename": "8ccf22b2-53fe-4886-b88d-d65aa0cf7252___GH_HL Leaf 196.1.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_healthy_02.jpg",
+    "class": "Tomato_healthy",
+    "original_filename": "0fee8af3-ca03-418c-a71c-c4fb0a80dc7b___RS_HL 0199.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  },
+  {
+    "new_name": "tomato_healthy_03.jpg",
+    "class": "Tomato_healthy",
+    "original_filename": "06704d9f-3bbc-40cd-a5eb-258ed55e172b___GH_HL Leaf 491.1.JPG",
+    "source": "Kaggle emmarex/plantdisease (PlantVillage mirror), val split"
+  }
+]

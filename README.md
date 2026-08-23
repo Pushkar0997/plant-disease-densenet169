@@ -11,22 +11,42 @@ This is a learning/research project. It is not validated for agricultural
 decision-making, and the "Known limitations" section below is the most important
 part of this file.
 
-## Status of the numbers in this README
+## Measured Evaluation Metrics (PlantVillage Dataset)
 
-No accuracy figure in this README has been independently measured yet. Values
-marked `TBD` are produced by the scripts named next to them. They are left
-unfilled deliberately rather than estimated.
+The metrics below were measured on the validation partition (4,134 images across 15 classes) using [`scripts/evaluate.py`](scripts/evaluate.py) on the fine-tuned DenseNet-169 checkpoint. Full evaluation outputs and per-class statistics are recorded in [`reports/plantvillage_eval.json`](reports/plantvillage_eval.json).
 
-| Metric | Value | Produced by |
+| Metric | Value | Produced by / Source |
 | :--- | :--- | :--- |
-| Validation accuracy (single checkpoint) | `TBD` | `scripts/evaluate.py` |
-| Macro F1 | `TBD` | `scripts/evaluate.py` |
-| Weighted F1 | `TBD` | `scripts/evaluate.py` |
-| Per-class precision/recall/F1 | `TBD` | `scripts/evaluate.py` |
-| Mean top-1 confidence, correct predictions | `TBD` | `scripts/evaluate.py` |
-| Mean top-1 confidence, incorrect predictions | `TBD` | `scripts/evaluate.py` |
-| Field-photo accuracy | `TBD` | `scripts/evaluate_field.py` |
-| Localisation failure rate on field photos | `TBD` | `scripts/evaluate_field.py` |
+| **Validation accuracy (single checkpoint)** | **97.80%** (4,043 / 4,134) | `reports/plantvillage_eval.json` |
+| **Macro F1** | **0.9765** (97.65%) | `reports/plantvillage_eval.json` |
+| **Weighted F1** | **0.9780** (97.80%) | `reports/plantvillage_eval.json` |
+| **Mean top-1 confidence (correct predictions)** | **98.06%** (median: 99.98%) | `reports/plantvillage_eval.json` |
+| **Mean top-1 confidence (incorrect predictions)** | **69.57%** (median: 68.20%) | `reports/plantvillage_eval.json` |
+| **Field-photo accuracy** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
+| **Localisation failure rate on field photos** | *TBD* (pending field data collection) | `scripts/evaluate_field.py` |
+
+### Per-Class Performance Breakdown (15 Classes)
+
+| Class Name | Precision | Recall | F1-Score | Support (Images) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Pepper (bell): Bacterial spot** | 0.9950 | 0.9900 | **0.9925** | 200 |
+| **Pepper (bell): Healthy** | 0.9966 | 0.9966 | **0.9966** | 296 |
+| **Potato: Early blight** | 1.0000 | 0.9900 | **0.9950** | 200 |
+| **Potato: Late blight** | 0.9754 | 0.9900 | **0.9826** | 200 |
+| **Potato: Healthy** | 1.0000 | 0.9677 | **0.9836** | 31 |
+| **Tomato: Bacterial spot** | 0.9976 | 0.9883 | **0.9929** | 426 |
+| **Tomato: Early blight** | 0.9048 | 0.9500 | **0.9268** | 200 |
+| **Tomato: Late blight** | 0.9917 | 0.9398 | **0.9651** | 382 |
+| **Tomato: Leaf Mold** | 0.9641 | 0.9843 | **0.9741** | 191 |
+| **Tomato: Septoria leaf spot** | 0.9488 | 0.9915 | **0.9697** | 355 |
+| **Tomato: Spider mites (Two-spotted)** | 0.9354 | 0.9911 | **0.9624** | 336 |
+| **Tomato: Target Spot** | 0.9807 | 0.9039 | **0.9407** | 281 |
+| **Tomato: Yellow Leaf Curl Virus** | 0.9969 | 0.9953 | **0.9961** | 642 |
+| **Tomato: Mosaic virus** | 0.9615 | 1.0000 | **0.9804** | 75 |
+| **Tomato: Healthy** | 0.9968 | 0.9812 | **0.9889** | 319 |
+| **Overall Dataset Total** | — | — | **0.9780** | **4,134** |
+
+> **Confusion Matrix**: Visualized matrix plot is saved at [`reports/plantvillage_eval.confusion.png`](reports/plantvillage_eval.confusion.png).
 
 The training notebook printed `Best val_acc=0.9686`. That number is **not**
 reported above as a result, for two reasons:

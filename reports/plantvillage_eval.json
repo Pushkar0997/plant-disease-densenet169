@@ -1,0 +1,416 @@
+{
+  "what_this_measures": "Accuracy on the reproduced validation split of the training run. This is NOT a held-out test number \u2014 the val split drove checkpoint selection. See 'caveats'.",
+  "config": {
+    "checkpoint": "densenet169_plantvillage.pth",
+    "class_mapping": "models/class_mapping.json",
+    "data_root": "/content/plantvillage_data/raw",
+    "class_root": "/content/plantvillage_data/raw/plantvillage/PlantVillage",
+    "num_classes": 15,
+    "val_split": 0.2,
+    "seed": 42,
+    "split_order": "sorted",
+    "preprocess": "notebook",
+    "image_size": 224,
+    "batch_size": 32,
+    "device": "cpu"
+  },
+  "dataset": {
+    "val_images": 4134,
+    "train_images_excluded": 16504
+  },
+  "overall": {
+    "accuracy": 0.9779874213836478,
+    "macro_f1": 0.9765011599086285,
+    "weighted_f1": 0.9779944942373509
+  },
+  "per_class": {
+    "Pepper__bell___Bacterial_spot": {
+      "precision": 0.9949748743718593,
+      "recall": 0.99,
+      "f1": 0.9924812030075187,
+      "support": 200
+    },
+    "Pepper__bell___healthy": {
+      "precision": 0.9966216216216216,
+      "recall": 0.9966216216216216,
+      "f1": 0.9966216216216216,
+      "support": 296
+    },
+    "Potato___Early_blight": {
+      "precision": 1.0,
+      "recall": 0.99,
+      "f1": 0.9949748743718593,
+      "support": 200
+    },
+    "Potato___Late_blight": {
+      "precision": 0.9753694581280788,
+      "recall": 0.99,
+      "f1": 0.9826302729528535,
+      "support": 200
+    },
+    "Potato___healthy": {
+      "precision": 1.0,
+      "recall": 0.967741935483871,
+      "f1": 0.9836065573770492,
+      "support": 31
+    },
+    "Tomato_Bacterial_spot": {
+      "precision": 0.9976303317535545,
+      "recall": 0.9882629107981221,
+      "f1": 0.9929245283018868,
+      "support": 426
+    },
+    "Tomato_Early_blight": {
+      "precision": 0.9047619047619048,
+      "recall": 0.95,
+      "f1": 0.926829268292683,
+      "support": 200
+    },
+    "Tomato_Late_blight": {
+      "precision": 0.9917127071823204,
+      "recall": 0.9397905759162304,
+      "f1": 0.9650537634408602,
+      "support": 382
+    },
+    "Tomato_Leaf_Mold": {
+      "precision": 0.9641025641025641,
+      "recall": 0.9842931937172775,
+      "f1": 0.9740932642487047,
+      "support": 191
+    },
+    "Tomato_Septoria_leaf_spot": {
+      "precision": 0.9487870619946092,
+      "recall": 0.9915492957746479,
+      "f1": 0.9696969696969697,
+      "support": 355
+    },
+    "Tomato_Spider_mites_Two_spotted_spider_mite": {
+      "precision": 0.9353932584269663,
+      "recall": 0.9910714285714286,
+      "f1": 0.9624277456647399,
+      "support": 336
+    },
+    "Tomato__Target_Spot": {
+      "precision": 0.9806949806949807,
+      "recall": 0.9039145907473309,
+      "f1": 0.9407407407407408,
+      "support": 281
+    },
+    "Tomato__Tomato_YellowLeaf__Curl_Virus": {
+      "precision": 0.9968798751950078,
+      "recall": 0.9953271028037384,
+      "f1": 0.9961028838659393,
+      "support": 642
+    },
+    "Tomato__Tomato_mosaic_virus": {
+      "precision": 0.9615384615384616,
+      "recall": 1.0,
+      "f1": 0.9803921568627451,
+      "support": 75
+    },
+    "Tomato_healthy": {
+      "precision": 0.9968152866242038,
+      "recall": 0.9811912225705329,
+      "f1": 0.9889415481832543,
+      "support": 319
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "Pepper__bell___Bacterial_spot",
+      "Pepper__bell___healthy",
+      "Potato___Early_blight",
+      "Potato___Late_blight",
+      "Potato___healthy",
+      "Tomato_Bacterial_spot",
+      "Tomato_Early_blight",
+      "Tomato_Late_blight",
+      "Tomato_Leaf_Mold",
+      "Tomato_Septoria_leaf_spot",
+      "Tomato_Spider_mites_Two_spotted_spider_mite",
+      "Tomato__Target_Spot",
+      "Tomato__Tomato_YellowLeaf__Curl_Virus",
+      "Tomato__Tomato_mosaic_virus",
+      "Tomato_healthy"
+    ],
+    "matrix": [
+      [
+        198,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        295,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        198,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        198,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        30,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        421,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        190,
+        0,
+        4,
+        5,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        12,
+        359,
+        2,
+        3,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        188,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        352,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        333,
+        2,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        6,
+        18,
+        254,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        639,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        75,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        3,
+        1,
+        0,
+        0,
+        313
+      ]
+    ],
+    "png": "reports/plantvillage_eval.confusion.png"
+  },
+  "confidence": {
+    "correct_predictions": {
+      "count": 4043,
+      "mean": 0.9806156158447266,
+      "median": 0.9997934699058533
+    },
+    "incorrect_predictions": {
+      "count": 91,
+      "mean": 0.6956651210784912,
+      "median": 0.6820111870765686
+    },
+    "note": "If these two distributions overlap heavily, no single confidence threshold can separate right from wrong answers, and the app's confidence floor is doing less than it appears."
+  },
+  "caveats": [
+    "NOT A HELD-OUT TEST SET. The notebook splits train/val only, and saved a checkpoint on every val-accuracy improvement, so val drove model selection. No partition of this dataset is sealed.",
+    "The reported best val_acc=0.9686 is a maximum over 15 epochs on this same split and is optimistically biased. The accuracy above is a single-checkpoint estimate on the same data \u2014 better, but still not held out.",
+    "split_order=sorted. The notebook's split depends on Path.iterdir() ordering and cannot be exactly reproduced. Some images that were in the original train set may appear here, which inflates accuracy by an unknown but probably small amount.",
+    "preprocess=notebook. The notebook trains/validates with Resize((224,224)); src/classifier.py infers with Resize(256)+CenterCrop(224). Run both modes \u2014 the difference is what the deployed app loses to that mismatch.",
+    "PlantVillage is lab-condition imagery (single leaf, uniform background, controlled light). This number does not predict field performance. Use scripts/evaluate_field.py for that."
+  ],
+  "to_get_an_unbiased_number": "Retrain with a three-way split: carve a test partition first, never load it during training, select the checkpoint on val, then evaluate once on test. Nothing computed from the current run can substitute for this."
+}
