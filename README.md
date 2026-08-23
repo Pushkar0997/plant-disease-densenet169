@@ -11,6 +11,15 @@ This is a learning/research project. It is not validated for agricultural
 decision-making, and the "Known limitations" section below is the most important
 part of this file.
 
+## Links
+
+- **Live demo:** https://huggingface.co/spaces/PushkarKumar/plant-disease-densenet169
+- **Model weights:** https://huggingface.co/PushkarKumar/plant-disease-densenet169
+
+The demo runs on CPU with a 0.80 confidence floor. Sample leaves are bundled,
+but they are PlantVillage images — lab conditions, which is the easy case. See
+"Known limitations" for what that does and does not tell you.
+
 ## Measured Evaluation Metrics (PlantVillage Dataset)
 
 The metrics below were measured on the validation partition (4,134 images across 15 classes) using [`scripts/evaluate.py`](scripts/evaluate.py) on the fine-tuned DenseNet-169 checkpoint. Full evaluation outputs and per-class statistics are recorded in [`reports/plantvillage_eval.json`](reports/plantvillage_eval.json).
