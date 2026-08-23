@@ -16,12 +16,10 @@ from typing import NamedTuple, Optional
 # Sensible defaults, both overridable via environment variables so a
 # deployment (e.g. a Hugging Face Space) doesn't require code changes.
 #
-# HF_REPO_ID is intentionally an obvious placeholder rather than a guessed
-# real repo: pointing it at a real-looking but wrong/nonexistent repo by
-# default would fail in a way that's easy to miss (404 looks the same as
-# "not configured yet"). Set PLANT_DISEASE_HF_REPO_ID once the checkpoint is
-# actually uploaded to the Hub.
-DEFAULT_HF_REPO_ID = "CHANGE_ME/plant-disease-densenet169"
+# DEFAULT_HF_REPO_ID points at the published checkpoint, so a fresh clone
+# with no local .pth fetches it automatically and the app works out of the
+# box. Override with PLANT_DISEASE_HF_REPO_ID to use your own fine-tune.
+DEFAULT_HF_REPO_ID = "PushkarKumar/plant-disease-densenet169"
 DEFAULT_HF_FILENAME = "densenet169_plant_disease.pth"
 
 
@@ -46,7 +44,7 @@ def resolve_weights_path(
             what keeps a local dev loop network-free.
         repo_id: Hugging Face repo id to download from if local_path is
             absent. Defaults to the PLANT_DISEASE_HF_REPO_ID env var, falling
-            back to DEFAULT_HF_REPO_ID (an obvious placeholder — see above).
+            back to DEFAULT_HF_REPO_ID (the published checkpoint repo).
         filename: Filename within the repo. Defaults to the
             PLANT_DISEASE_HF_FILENAME env var, falling back to
             DEFAULT_HF_FILENAME.
@@ -66,16 +64,15 @@ def resolve_weights_path(
     repo_id = repo_id or os.environ.get("PLANT_DISEASE_HF_REPO_ID", DEFAULT_HF_REPO_ID)
     filename = filename or os.environ.get("PLANT_DISEASE_HF_FILENAME", DEFAULT_HF_FILENAME)
 
-    if not repo_id or repo_id == DEFAULT_HF_REPO_ID:
+    if not repo_id:
         return WeightsResolution(
             path=None,
             source="none",
             error=(
-                f"No local checkpoint at {local_path!r} and no Hugging Face "
-                "repo is configured (PLANT_DISEASE_HF_REPO_ID is unset — it "
-                f"still points at the placeholder {DEFAULT_HF_REPO_ID!r}). "
-                "Set PLANT_DISEASE_HF_REPO_ID to the real repo once the "
-                "checkpoint is uploaded, or place the .pth file at "
+                f"No local checkpoint at {local_path!r} and "
+                "PLANT_DISEASE_HF_REPO_ID was set to an empty value, so there "
+                "is no Hugging Face repo to fetch from. Either unset it to use "
+                f"the default ({DEFAULT_HF_REPO_ID!r}) or place a .pth file at "
                 f"{local_path!r}."
             ),
         )
