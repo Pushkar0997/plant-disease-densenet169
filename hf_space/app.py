@@ -10,6 +10,12 @@ import numpy as np
 import spaces
 from PIL import Image
 
+# Must be set before src.visualizer imports pyplot. Headless Spaces have no
+# display; without this matplotlib can pick an interactive backend and fail
+# when render_top_k_chart draws.
+import matplotlib
+matplotlib.use("Agg")
+
 from src.pipeline import PlantDiagnosticPipeline
 from src.weights import resolve_weights_path
 
@@ -59,11 +65,21 @@ DEFAULT_MAPPING_PATH = os.path.join("models", "class_mapping.json")
 # below whenever it's set.
 weights_resolution = resolve_weights_path(local_path=DEFAULT_WEIGHTS_PATH)
 
-# Initialize Pipeline globally
+# Initialize Pipeline globally.
+#
+# device is pinned to "cpu" rather than auto-detected. On ZeroGPU the spaces
+# package patches torch so that CUDA looks available in the main process while
+# actual CUDA work is only valid inside an @spaces.GPU fork. Auto-detection
+# therefore selects "cuda", startup still succeeds because CUDA ops are
+# deferred, and every inference call then fails at execution time.
+#
+# This app runs inference on CPU by design (see _zerogpu_probe), so pinning
+# the device is both the fix and the honest description of what it does.
 pipeline = PlantDiagnosticPipeline(
     classifier_weights_path=weights_resolution.path,
     class_mapping_path=DEFAULT_MAPPING_PATH,
     detector_confidence=0.35,
+    device="cpu",
 )
 
 
